@@ -6,7 +6,7 @@ from models import Task
 class TaskService:
     def __init__(self, db_config: Dict[str, Any]):
         self.db_config = db_config
-        self.connection = None
+        self.connect()
     
     def connect(self) -> bool:
         self.connection = mysql.connector.connect(**self.db_config)
