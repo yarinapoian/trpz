@@ -1,0 +1,56 @@
+services:
+  database:
+    image: mariadb:latest
+    container_name: mywebapp-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: task_tracker
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+      MARIADB_AUTO_UPGRADE: 1
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - mywebapp-network
+
+  web:
+    build: mywebapp
+    container_name: mywebapp-web
+    restart: unless-stopped
+    environment:
+      DB_HOST: database
+      DB_USER: app
+      DB_PASSWORD: app
+      DB_NAME: task_tracker
+      APP_HOST: 0.0.0.0
+      APP_PORT: 3000
+    networks:
+      - mywebapp-network
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:latest
+    container_name: mywebapp-nginx
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - mywebapp-network
+
+volumes:
+  db_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  mywebapp-network:
+    driver: bridge
+

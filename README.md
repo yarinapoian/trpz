@@ -17,7 +17,7 @@
 
 Трекер задач дозволяє користувачам створювати нові задачі, переглядати список усіх задач, отримувати деталі конкретної задачі та змінювати статус задачі на виконано. Застосунок підтримує як JSON, так і HTML відповіді залежно від заголовка `Accept` у запиті.
 
-### Налаштування середовища для розробки
+### Налаштування середовища для розробки та запустіть застосунок
 
 1. Скопіюйте репозиторій:
 ```bash
@@ -25,32 +25,11 @@ git clone https://github.com/yarinapoian/trpz.git
 cd mywebapp
 ```
 
-2. Створіть venv:
+2. Запустіть docker compose:
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+docker compose -p mywebapp --build -d
 ```
 
-3. Встановіть залежності:
-```bash
-pip install -r requirements.txt
-```
-
-4. Налаштуйте базу даних (MariaDB):
-```bash
-mysql -u root -p < setup.sql
-```
-
-5. Запустіть міграцію бази даних:
-```bash
-python3 migrate.py --host=127.0.0.1 --user=app --password=app --database=task_tracker
-```
-
-## Запуск застосунку
-
-```bash
-python3 app.py --host=0.0.0.0 --port=3000 --db-host=127.0.0.1 --db-user=app --db-password=app --db-name=task_tracker
-```
 
 ## API ендпоінти
 
@@ -197,20 +176,13 @@ Database connection not established
 - Ubuntu 20.04 LTS. Взяти можна: https://ubuntu.com/download/server
 - Root-доступ
 - 2GB RAM
-- 10GB вільних дискового простору
+- 10GB вільних дискового просторує
+- Передвстановлений docker та docker-compose
 
 ### Автоматичне розгортання за допомогою скрипту
 
 Для автоматичного розгортання треба спочатку скопіювати репозиторій на сервер, а потім виконати наступну команду:
 
 ```bash
-cd deploy
-sudo bash deploy.sh
-```
-
-### Як увійти на ВМ
-Після розгортання можна увійти на ВМ за допомогою SSH:
-
-```bash
-ssh student@<vm_ip_address>
+docker compose -p mywebapp --build -d
 ```
