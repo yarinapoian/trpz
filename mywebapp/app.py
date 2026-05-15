@@ -22,8 +22,8 @@ def create_html_response(content: str, title: str = "Task Tracker") -> str:
 
 
 def get_accept_type() -> str:
-    accept = request.headers.get('Accept', 'application/json')
-    if 'text/html' in accept:
+    accept1 = request.headers.get('Accept', 'application/json')
+    if 'text/html' in accept1:
         return 'html'
     return 'json'
 
