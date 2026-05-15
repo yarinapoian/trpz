@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: |
+          pip install flake8 mypy yamllint shellcheck-py
+      - run: flake8 mywebapp/
+      - run: mypy mywebapp/ --ignore-missing-imports || true
+      - run: yamllint -c .yamllint .github/workflows/
+      - run: shellcheck deploy/*.sh
+
+  hadolint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.2.0
+        with:
+          dockerfile: mywebapp/Dockerfile
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: task_tracker
+          MYSQL_USER: app
+          MYSQL_PASSWORD: app
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        ports:
+          - 3306:3306
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: |
+          cd mywebapp
+          pip install -r requirements-dev.txt
+      - run: |
+          cd mywebapp
+          pytest test_app.py --cov=. --cov-report=xml --cov-report=term
+      - name: Check coverage
+        run: |
+          cd mywebapp
+          coverage report | grep -E "TOTAL|^mywebapp" || echo "Coverage report generated"
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./mywebapp/coverage.xml
+          fail_ci_if_error: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: mywebapp/coverage.xml
+
+  build:
+    needs: [lint, test, hadolint]
+    if: success()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract tag
+        id: meta
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${{ github.ref_name }}"
+            echo "tags=ghcr.io/${{ github.repository }}:${TAG},ghcr.io/${{ github.repository }}:stable" >> $GITHUB_OUTPUT
+          else
+            SHA="${{ github.sha }}"
+            echo "tags=ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:sha-${SHA}" >> $GITHUB_OUTPUT
+          fi
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./mywebapp
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

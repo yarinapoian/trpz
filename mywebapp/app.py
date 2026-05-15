@@ -27,11 +27,12 @@ def get_accept_type() -> str:
         return 'html'
     return 'json'
 
+
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     accept_type = get_accept_type()
     tasks = task_service.get_all_tasks()
-    
+
     if accept_type == 'html':
         if not tasks:
             content = "<h1>Tasks</h1><p>No tasks found.</p>"
@@ -60,20 +61,20 @@ def get_tasks():
 @app.route('/tasks', methods=['POST'])
 def create_task():
     accept_type = get_accept_type()
-    
+
     try:
         data = request.get_json()
         title = data.get('title')
-        
+
         if not title:
             error_msg = "Title is required"
             if accept_type == 'html':
                 return create_html_response(f"<h1>Error</h1><p>{error_msg}</p>"), 400
             else:
                 return jsonify({"error": error_msg}), 400
-        
+
         task = task_service.create_task(title)
-        
+
         if accept_type == 'html':
             content = f"""
             <h1>Task Created</h1>
@@ -96,13 +97,13 @@ def create_task():
 def get_task(task_id):
     accept_type = get_accept_type()
     task = task_service.get_task_by_id(task_id)
-    
+
     if task is None:
         error_msg = "Task not found"
         if accept_type == 'html':
             return create_html_response(f"<h1>Error</h1><p>{error_msg}</p>"), 404
         return jsonify({"error": error_msg}), 404
-    
+
     if accept_type == 'html':
         content = f"""
         <h1>Task #{task.id}</h1>
@@ -117,18 +118,18 @@ def get_task(task_id):
 @app.route('/tasks/<int:task_id>/done', methods=['POST'])
 def mark_task_done(task_id):
     accept_type = get_accept_type()
-    
+
     task = task_service.get_task_by_id(task_id)
     if task is None:
         error_msg = "Task not found"
         if accept_type == 'html':
             return create_html_response(f"<h1>Error</h1><p>{error_msg}</p>"), 404
         return jsonify({"error": error_msg}), 404
-    
+
     task_service.mark_task_done(task_id)
-    
+
     updated_task = task_service.get_task_by_id(task_id)
-    
+
     if accept_type == 'html':
         content = f"""
         <h1>Task Updated</h1>
@@ -156,7 +157,7 @@ def health_ready():
 
 def main():
     global task_service
-    
+
     parser = argparse.ArgumentParser(description='Task Tracker Web Application')
     parser.add_argument('--host', type=str, default='127.0.0.1')
     parser.add_argument('--port', type=int, default=3000)
@@ -164,16 +165,16 @@ def main():
     parser.add_argument('--db-user', type=str, default='app')
     parser.add_argument('--db-password', type=str, default='app')
     parser.add_argument('--db-name', type=str, default='task_tracker')
-    
+
     args = parser.parse_args()
-    
+
     db_config = {
         'host': args.db_host,
         'user': args.db_user,
         'password': args.db_password,
         'database': args.db_name
     }
-    
+
     task_service = TaskService(db_config)
 
     try:

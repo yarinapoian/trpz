@@ -3,6 +3,7 @@ import sys
 import argparse
 import mysql.connector
 
+
 def migrate_database(host: str, user: str, password: str, database: str) -> bool:
     connection = mysql.connector.connect(
         host=host,
@@ -37,15 +38,14 @@ def main():
     parser.add_argument('--user', type=str, default='app', help='Database user')
     parser.add_argument('--password', type=str, default='app', help='Database password')
     parser.add_argument('--database', type=str, default='task_tracker', help='Database name')
-    
+
     args = parser.parse_args()
-    
+
     success = migrate_database(args.host, args.user, args.password, args.database)
-    
+
     if not success:
         sys.exit(1)
 
 
 if __name__ == '__main__':
     main()
-
