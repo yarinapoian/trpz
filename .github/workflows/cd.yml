@@ -22,7 +22,7 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
+          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" "IMAGE_TAG=$IMAGE_TAG" bash -s << 'EOF'
           docker pull ghcr.io/${{ github.repository }}:${IMAGE_TAG}
           docker stop mywebapp || true
           docker rm mywebapp || true
