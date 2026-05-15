@@ -5,7 +5,7 @@ from service import TaskService
 app = Flask(__name__)
 task_service = None
 
-
+some not normal string
 def create_html_response(content: str, title: str = "Task Tracker") -> str:
     return f"""
     <!DOCTYPE html>
