@@ -1,0 +1,18 @@
+[Unit]
+Description=Task Tracker Web Application
+After=network.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=app
+Group=app
+WorkingDirectory=/opt/mywebapp
+ExecStartPre=/opt/mywebapp/venv/bin/python3 /opt/mywebapp/migrate.py --host=127.0.0.1 --user=app --password=app --database=task_tracker
+ExecStart=/opt/mywebapp/venv/bin/python3 /opt/mywebapp/app.py --host=127.0.0.1 --port=3000 --db-host=127.0.0.1 --db-user=app --db-password=app --db-name=task_tracker
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
