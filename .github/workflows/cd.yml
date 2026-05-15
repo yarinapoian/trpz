@@ -30,6 +30,7 @@ jobs:
             --name mywebapp \
             --restart unless-stopped \
             -p 3000:3000 \
+            --add-host=host.docker.internal:host-gateway \
             -e DB_HOST=${{ secrets.DB_HOST }} \
             -e DB_USER=${{ secrets.DB_USER }} \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
