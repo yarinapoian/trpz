@@ -10,7 +10,7 @@ def create_html_response(content: str, title: str = "Task Tracker") -> str:
     return f"""
     <!DOCTYPE html>
     <html>
-    <head>
+    <head>123
         <title>{title}</title>
         <meta charset="UTF-8">
     </head>
